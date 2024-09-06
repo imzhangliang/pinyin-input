@@ -16,5 +16,6 @@ python convert.py > ../db.json
 - open index.html locally or serve it as a web page
 
 #### reference
-character freqency: `https://lingua.mtsu.edu/chinese-computing/statistics/char/list.php?Which=MO`
-chinese words freqency: `https://lingua.mtsu.edu/chinese-computing/statistics/bigram/form.php`
+- https://github.com/lwinmoe/segment
+- https://lingua.mtsu.edu/chinese-computing/statistics/char/list.php?Which=MO`
+- https://lingua.mtsu.edu/chinese-computing/statistics/bigram/form.php
