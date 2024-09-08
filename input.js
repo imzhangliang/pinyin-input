@@ -83,18 +83,56 @@ class Trie {
 
 let trie = new Trie();
 
-function showPinyinResults(pinyin) {
-    // document.querySelector("#results").innerHTML = trie.allPrefixCharacters(pinyin).join(', ')
-    document.querySelector("#results").innerHTML = trie.allCharacters(pinyin).join(', ')
+function showPinyinResults(results) {
+    document.querySelector("#results").innerHTML = results.map((item, index) => `${index + 1}. ${item}`).join(', ')
+}
 
+function getSearchResults(pinyin) {
+    // return trie.allPrefixCharacters(pinyin);
+    return trie.allCharacters(pinyin);
+}
 
+function addWordToContent(word) {
+    const contentElem = document.querySelector("#pyInput");
+    contentElem.value += word;
+}
+
+function getChooseNumberFromPinyin(pinyin) {
+    if (!pinyin) {
+        return -1;
+    }
+    const lastChar = pinyin[pinyin.length - 1];
+    if (lastChar >= '1' && lastChar <= '9') {
+        return Number.parseInt(lastChar);
+    } else if (lastChar === ' ') {
+        return 1;
+    }
+
+    return -1;
 }
 
 function loadInputListener() {
-    document.querySelector("#pyInput").addEventListener('input', (event) => {
+    const inputElem = document.querySelector("#pyInput");
+    
+    inputElem.addEventListener('input', (event) => {
         let pinyin = event.target.value;
-        console.log(pinyin);
-        showPinyinResults(pinyin);
+        const pinyinReg = /[A-Za-z]+[1-9 ]{0,1}$/;
+
+        pinyin = pinyin.match(pinyinReg)?.[0] || '';
+        let chooseNumber = getChooseNumberFromPinyin(pinyin);
+        pinyin = pinyin.replace(/[1-9 ]/g, '');
+
+        let results = getSearchResults(pinyin);
+        if (chooseNumber !== null && results[chooseNumber - 1]) {
+            console.log('add word...')
+
+            inputElem.value = inputElem.value.replace(pinyinReg, '');
+            addWordToContent(results[chooseNumber - 1]);
+            showPinyinResults([]);
+            
+        } else {
+            showPinyinResults(results);
+        }
     });
 }
 
