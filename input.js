@@ -113,12 +113,14 @@ function getChooseNumberFromPinyin(pinyin) {
 
 function loadInputListener() {
     const inputElem = document.querySelector("#pyInput");
+    inputElem.value = '';
+    inputElem.disabled = false;
     
     inputElem.addEventListener('input', (event) => {
-        let pinyin = event.target.value;
+        let text = event.target.value;
         const pinyinReg = /[A-Za-z]+[1-9 ]{0,1}$/;
 
-        pinyin = pinyin.match(pinyinReg)?.[0] || '';
+        let pinyin = text.match(pinyinReg)?.[0] || '';
         let chooseNumber = getChooseNumberFromPinyin(pinyin);
         pinyin = pinyin.replace(/[1-9 ]/g, '');
 
