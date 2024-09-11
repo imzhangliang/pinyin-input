@@ -83,9 +83,7 @@ class Trie {
 
 let trie = new Trie();
 
-function showPinyinResults(results) {
-    document.querySelector("#results").innerHTML = results.map((item, index) => `${index + 1}. ${item}`).join(', ')
-}
+
 
 function getSearchResults(pinyin) {
     // return trie.allPrefixCharacters(pinyin);
@@ -111,6 +109,70 @@ function getChooseNumberFromPinyin(pinyin) {
     return -1;
 }
 
+function getPageUpDownFromPinyin(pinyin) {
+    if (!pinyin) {
+        return null;
+    }
+    const lastChar = pinyin[pinyin.length - 1];
+    if (lastChar == '[') {
+        return 'pageUp';
+    } else if (lastChar === ']') {
+        return 'pageDown';
+    }
+
+    return null;
+}
+
+class SearchResult {
+    #results = []
+    #page = 0
+    #maxResultsPerPage = 9
+
+    showPinyinResults(results) {
+        let content = results.map((item, index) => `${index + 1}. ${item}`).join(', ');
+        let pageUpDownPrompt = '<span style="position: relative; top: -24px"><b>page up [<b> <b>page down ]</b><span>'
+        document.querySelector("#results").innerHTML = `${content} ${this.#results.length > this.#maxResultsPerPage ? pageUpDownPrompt : ''}`;
+    }
+
+    sendResults(results) {
+        this.#results = results;
+        this.#page = 0
+        this.show();
+    }
+
+    getShowResults() {
+        let from = this.#page * this.#maxResultsPerPage;
+        let to = (this.#page + 1) * this.#maxResultsPerPage;
+        let showResults = this.#results.slice(from, to);
+        return showResults;
+    }
+
+    show() {
+        let showResults = this.getShowResults();
+        this.showPinyinResults(showResults);
+    }
+
+    nextPage() {
+        if ((this.#page + 1) * this.#maxResultsPerPage < this.#results.length) {
+            this.#page++;
+        }
+        this.show();
+    }
+
+    prevPage() {
+        if (this.#page > 0) {
+            this.#page--;
+        }
+        this.show();
+    }
+
+    getSelection(no) {
+        return this.getShowResults()[no] || '';
+    }
+}
+
+const searchResult = new SearchResult();
+
 function loadInputListener() {
     const inputElem = document.querySelector("#pyInput");
     inputElem.value = '';
@@ -118,22 +180,36 @@ function loadInputListener() {
     
     inputElem.addEventListener('input', (event) => {
         let text = event.target.value;
-        const pinyinReg = /[A-Za-z]+[1-9 ]{0,1}$/;
+        const pinyinReg = /[A-Za-z]+[1-9\[\] ]{0,1}$/;
 
         let pinyin = text.match(pinyinReg)?.[0] || '';
+
         let chooseNumber = getChooseNumberFromPinyin(pinyin);
         pinyin = pinyin.replace(/[1-9 ]/g, '');
+
+        let pageUpDown = getPageUpDownFromPinyin(pinyin);
+        pinyin = pinyin.replace(/[\[\]]/g, '');
 
         let results = getSearchResults(pinyin);
         if (chooseNumber !== null && results[chooseNumber - 1]) {
             console.log('add word...')
 
             inputElem.value = inputElem.value.replace(pinyinReg, '');
-            addWordToContent(results[chooseNumber - 1]);
-            showPinyinResults([]);
+            addWordToContent(searchResult.getSelection(chooseNumber - 1));
+            searchResult.sendResults([]);
             
+        } if (pageUpDown != null) {
+            switch(pageUpDown) {
+                case 'pageUp':
+                    searchResult.prevPage();
+                    break;
+                case 'pageDown':
+                    searchResult.nextPage();
+                    break;
+            }
+            inputElem.value = inputElem.value.slice(0, inputElem.value.length - 1);
         } else {
-            showPinyinResults(results);
+            searchResult.sendResults(results);
         }
     });
 }
