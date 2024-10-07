@@ -18,6 +18,10 @@ function usage() {
     process.exit(1);
 }
 
+function fixPinyin(py) {
+    return py.replace(/ü/g, 'v')
+}
+
 // Import the 'fs' (File System) module
 const fs = require('fs');
 
@@ -42,6 +46,7 @@ try {
 
         let pinyinList = getPinyinStrings(word);
         for (let py of pinyinList) {
+            py = fixPinyin(py)
             res.push([py, word]);
             if (res.length % 10000 == 1) {
                 process.stdout.write(".");
